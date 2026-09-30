@@ -1,0 +1,6 @@
+node_modules/
+.env*
+*token*.json
+client_secret*.json
+*.sqlite*
+*.db*
