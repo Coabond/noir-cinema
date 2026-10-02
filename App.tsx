@@ -1,11 +1,12 @@
-import React,{useState} from 'react';
+import React,{useEffect,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import Cinema from './Cinema';
-import {BACKEND,connectLibrary,lockLibrary} from './bridge-client';
+import {BACKEND,unlockLibrary,lockLibrary,setLockHandler} from './bridge-client';
 function App(){
- const [state,setState]=useState('locked');
- if(state==='ready')return <><div className="session-bar"><span>Private session connected</span><button onClick={lockLibrary}>Lock library</button></div><Cinema/></>;
- const message=state==='blocked'?'Allow pop-ups for this site, then connect again.':state==='timeout'?'Finish signing in in the private window, then connect again.':state==='expired'?'Your private session ended. Connect again to continue.':state==='connecting'?'In the sign-in window, choose “Connect my cinema”. Keep that window open while you watch.':'Sign in to open your private collection. Your library is visible only after you connect.';
- return <main className="gate"><header className="header"><a className="brand" href="./">NOIR<span className="brand-sub">PRIVATE CINEMA</span></a></header><section className="connect-hero"><span className="eyebrow">YOUR PERSONAL COLLECTION</span><h1>A cinema<br/><em>of your own.</em></h1><p role="status">{message}</p><button className="button primary" onClick={()=>connectLibrary(setState)}>{state==='connecting'?'Open connection again':'Connect private library'}</button><a className="gate-link" href={BACKEND} target="_blank" rel="noopener noreferrer">Manage YouTube connection</a><small>Private sign-in · Search your entire library · YouTube playback</small></section></main>;
+ const [unlocked,setUnlocked]=useState(false),[password,setPassword]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{setLockHandler(()=>{setUnlocked(false);setPassword('');});return()=>setLockHandler(()=>{});},[]);
+ async function submit(event:React.FormEvent){event.preventDefault();setBusy(true);setError('');try{await unlockLibrary(password);setPassword('');setUnlocked(true);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ if(unlocked)return <><div className="session-bar"><span>Your private cinema</span><button onClick={lockLibrary}>Lock library</button></div><Cinema/></>;
+ return <main className="gate"><header className="header"><a className="brand" href="./">NOIR<span className="brand-sub">PRIVATE CINEMA</span></a></header><section className="connect-hero"><span className="eyebrow">YOUR PERSONAL COLLECTION</span><h1>A cinema<br/><em>of your own.</em></h1><p>Unlock your private collection with your NOIR password.</p><form onSubmit={submit} className="unlock-form"><label htmlFor="password">Your password</label><input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} disabled={busy||!BACKEND}/><button className="button primary" disabled={busy||!BACKEND}>{busy?'Unlocking…':'Unlock my cinema'}</button></form>{error&&<p role="alert">{error}</p>}{!BACKEND&&<p role="status">Your private backend needs to be connected before you can sign in.</p>}<small>Private library · Search all uploads · YouTube playback</small></section></main>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);
