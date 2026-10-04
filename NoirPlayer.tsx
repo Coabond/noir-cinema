@@ -3,6 +3,7 @@ import {Play,Pause,SkipBack,SkipForward,Maximize,Minimize,Volume2,VolumeX,X,Sett
 import {authorizePlayback,libraryFetch,playbackRequest} from './bridge-client';
 import PlaybackAccount from './PlaybackAccount';
 import {openBrowserStream} from './BrowserPlayback';
+import {centeredTextFactory} from './CenteredSubtitles';
 type Video={id:string;title:string;description:string;thumbnail:string;position:number;duration:number};
 const languageName=(code:string)=>{try{return new Intl.DisplayNames([navigator.language],{type:'language'}).of(code)||code;}catch{return code;}};
 const audioKey=(t:any)=>JSON.stringify([t.language,t.label,t.roles,t.codecs,t.channelsCount,t.spatialAudio]);
@@ -28,7 +29,8 @@ export default function NoirPlayer({video,close}:{video:Video;close:()=>void}){
    const account=await playbackRequest('account',undefined,controller.signal);if(!active)return;if(!account.available)throw new Error('The new Cloudflare playback service is not deployed yet.');if(!account.connected){setConnect(true);setStatus('One connection. Every private upload.');return;}
    const engine=await loadEngine();if(!active)return;engine.polyfill.installAll();if(!engine.Player.isBrowserSupported())throw new Error('This browser does not support adaptive video playback. Try an updated browser.');
    local=new engine.Player();player.current=local;await local.attach(element.current);if(!active)return;
-   local.configure({streaming:{bufferingGoal:30,rebufferingGoal:2,bufferBehind:5},abr:{enabled:true},manifest:{dash:{ignoreMinBufferTime:true}}});
+   local.setVideoContainer(stage.current);
+   local.configure({textDisplayFactory:centeredTextFactory(local.getConfiguration().textDisplayFactory,engine),streaming:{bufferingGoal:30,rebufferingGoal:2,bufferBehind:5},abr:{enabled:true},manifest:{dash:{ignoreMinBufferTime:true}}});
    local.getNetworkingEngine().registerRequestFilter((_type:any,request:any)=>{authorizePlayback(request.uris,request.headers);request.allowCrossSiteCredentials=false;});
    local.addEventListener('error',()=>{if(active){setError('The stream stopped or your connection expired. Retry to request fresh playback.');setStatus('Playback interrupted');}});
    local.addEventListener('trackschanged',refreshTracks);local.addEventListener('variantchanged',refreshTracks);local.addEventListener('adaptation',refreshTracks);
