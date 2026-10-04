@@ -17,7 +17,7 @@ self.onmessage=async event=>{const {serial,kind,data}=event.data;try{
   player=await Player.create(undefined,async()=>new Response(data.script),undefined,data.id);result={id:player.player_id,timestamp:player.signature_timestamp};
  }else if(kind==='transform'){
   if(!player||!Array.isArray(data)||data.length>150)throw new Error('Invalid stream');const cache=new Map<string,string>();result=[];
-  for(const item of data){const url=new URL('https://r1.googlevideo.com/videoplayback');if(item.n)url.searchParams.set('n',item.n);let cipher:string|undefined;if(item.sig)cipher=new URLSearchParams({url:url.href,s:item.sig,sp:item.sp||'signature'}).toString();const transformed=new URL(await player.decipher(url.href,cipher,undefined,cache));result.push({index:item.index,...(item.n?{n:transformed.searchParams.get('n')}:{}),...(item.sig?{sig:transformed.searchParams.get(item.sp||'signature')}:{})});}
+  for(const item of data){const url=new URL('https://r1.googlevideo.com/videoplayback');if(item.n)url.searchParams.set('n',item.n);let cipher:string|undefined;if(item.sig)cipher=new URLSearchParams({url:url.href,s:item.sig,sp:item.sp||'signature'}).toString();const transformed=new URL(await player.decipher(cipher?undefined:url.href,cipher,undefined,cache));result.push({index:item.index,...(item.n?{n:transformed.searchParams.get('n')}:{}),...(item.sig?{sig:transformed.searchParams.get(item.sp||'signature')}:{})});}
  }else if(kind==='fixture'){result=await Platform.shim.eval({output:data.output} as any,{});}else throw new Error('Unsupported operation');
  self.postMessage({serial,result});
  }catch{self.postMessage({serial,error:'YouTube player processing failed. Retry playback.'});}};

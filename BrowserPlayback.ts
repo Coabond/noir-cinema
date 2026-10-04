@@ -1,6 +1,6 @@
 import {playbackRequest} from './bridge-client';
 export async function openBrowserStream(id:string,signal:AbortSignal){
- const worker=new Worker(new URL('./decipher-worker.js',document.baseURI),{type:'module'});let serial=0;
+ const worker=new Worker(new URL('./decipher-worker.js?v=20261004-2',document.baseURI),{type:'module'});let serial=0;
  const call=(kind:string,data:unknown)=>new Promise<any>((resolve,reject)=>{
   const number=++serial;const timer=setTimeout(()=>done(new Error('Player processing timed out. Retry playback.')),30000);
   const received=(event:MessageEvent)=>{if(event.data.serial===number)done(event.data.error?new Error(event.data.error):null,event.data.result);};
