@@ -17,7 +17,7 @@ export default function FeaturedCarousel({videos,open,paused=false}:{videos:Vide
  return <section className={'featured-carousel rotating-featured '+(reduced?'motion-reduced':'')} aria-label="Featured in your collection" aria-roledescription="carousel" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node|null))setFocused(false);}}>
   <div className="featured-heading"><div><span className="eyebrow">NEW IN YOUR COLLECTION</span><h2>Tonight’s possibilities.</h2></div><div className="row-buttons"><button aria-label={automatic?'Pause featured slideshow':'Play featured slideshow'} aria-pressed={automatic} disabled={videos.length<2} onClick={()=>setAutomatic(value=>!value)}>{automatic?<Pause size={17}/>:<Play size={17}/>}</button><button aria-label="Previous featured videos" disabled={videos.length<2} onClick={()=>change(slide.current-1)}><ChevronLeft size={20}/></button><button aria-label="Next featured videos" disabled={videos.length<2} onClick={()=>change(slide.current+1)}><ChevronRight size={20}/></button></div></div>
   <div className="featured-track" aria-live={automatic?'off':'polite'}>
-   {Array.from({length:Math.min(3,videos.length)},(_,slot)=>{
+   {Array.from({length:Math.min(1,videos.length)},(_,slot)=>{
     const index=(slide.current+slot)%videos.length,video=videos[index];
     const old=slide.previous>=0?videos[(slide.previous+slot)%videos.length]:null;
     const resume=video.position>0&&video.position<video.duration-15;
