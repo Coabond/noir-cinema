@@ -1,0 +1,19 @@
+{
+  "name": "noir-private-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node --test tests/security.test.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261004.1",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3",
+    "wrangler": "4.147.0"
+  },
+  "dependencies": {
+    "youtubei.js": "18.1.0"
+  }
+}
