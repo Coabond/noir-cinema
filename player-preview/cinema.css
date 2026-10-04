@@ -44,3 +44,18 @@
 .motion-reduced .featured-art-in,.motion-reduced .featured-art-out,.motion-reduced .featured-copy-enter{animation:none!important}
 .motion-reduced .featured-art-out{display:none}
 @media(prefers-reduced-motion:reduce){.featured-art-out{display:none}}
+
+/* One full-width movie at a time, with edge-to-edge artwork. */
+.rotating-featured .featured-track{display:block;overflow:hidden;padding:0;scroll-snap-type:none}
+.rotating-featured .featured-tile{width:100%;height:clamp(430px,34vw,600px);min-height:0}
+.rotating-featured .featured-copy{height:100%;min-height:0;width:min(760px,72%);padding:45px 50px;justify-content:center}
+.rotating-featured .featured-copy h3{font-size:clamp(28px,3.2vw,48px);line-height:1.12;letter-spacing:-1px;margin:20px 0 16px}
+.rotating-featured .featured-copy p{font-size:16px;line-height:1.7;max-width:520px;margin-bottom:26px}
+.rotating-featured .featured-copy .button{font-size:14px;min-height:46px}
+.rotating-featured .featured-meta{font-size:13px;gap:15px}
+.rotating-featured .featured-art{object-fit:cover;object-position:50% 40%}
+.rotating-featured .featured-overlay{background:linear-gradient(90deg,#080909f0 0%,#080909bc 35%,#08090935 65%,#08090905 100%),linear-gradient(0deg,#080909a0,transparent 55%)}
+.rotating-featured .featured-number{top:auto;bottom:28px;right:30px;font-size:25px}
+.rotating-featured .featured-pagination{margin-top:16px}
+@media(max-width:1000px){.rotating-featured .featured-copy{width:78%;padding:36px}.rotating-featured .featured-copy h3{font-size:36px}}
+@media(max-width:720px){.rotating-featured .featured-tile{height:520px}.rotating-featured .featured-copy{width:100%;padding:28px 25px;justify-content:flex-end}.rotating-featured .featured-copy h3{font-size:32px;-webkit-line-clamp:3}.rotating-featured .featured-copy p{font-size:14px}.rotating-featured .featured-overlay{background:linear-gradient(0deg,#080909f5 0%,#080909c0 45%,#08090910 85%)}.rotating-featured .featured-art{object-position:60% 35%}.rotating-featured .featured-number{top:20px;bottom:auto;right:20px;font-size:17px}}
