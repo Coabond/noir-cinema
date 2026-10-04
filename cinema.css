@@ -59,3 +59,9 @@
 .rotating-featured .featured-pagination{margin-top:16px}
 @media(max-width:1000px){.rotating-featured .featured-copy{width:78%;padding:36px}.rotating-featured .featured-copy h3{font-size:36px}}
 @media(max-width:720px){.rotating-featured .featured-tile{height:520px}.rotating-featured .featured-copy{width:100%;padding:28px 25px;justify-content:flex-end}.rotating-featured .featured-copy h3{font-size:32px;-webkit-line-clamp:3}.rotating-featured .featured-copy p{font-size:14px}.rotating-featured .featured-overlay{background:linear-gradient(0deg,#080909f5 0%,#080909c0 45%,#08090910 85%)}.rotating-featured .featured-art{object-position:60% 35%}.rotating-featured .featured-number{top:20px;bottom:auto;right:20px;font-size:17px}}
+
+/* Browse moving rows without disrupting a focused or hovered movie. */
+.animated-home-row .carousel-card .poster{transition:transform .35s ease,box-shadow .35s ease}
+.animated-home-row .carousel-card:hover .poster,.animated-home-row .carousel-card:focus-visible .poster{transform:translateY(-3px);box-shadow:0 10px 24px #0006}
+.animated-home-row .carousel-track{padding-top:8px;scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){.animated-home-row .carousel-track{scroll-behavior:auto}.animated-home-row .carousel-card .poster{transition:none}}
