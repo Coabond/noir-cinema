@@ -6,7 +6,13 @@ Open https://coabond.github.io/noir-cinema/ and unlock with your NOIR password. 
 
 Only public interface source and built assets are stored in this repository. Never commit passwords, setup keys, Google credentials, library records or database exports. The session token is kept in browser memory and cleared on refresh, closing the page or Lock library. Lock library revokes it on the server. Sessions expire after eight hours.
 
-YouTube independently controls private-video playback and available resolution. A library connection does not sign the embedded player into YouTube. Select 2160p when offered, or use Watch on YouTube in the upload owner's account if embedded playback is refused.
+This draft replaces the YouTube iframe with NOIR's own Shaka-based player: quality and audio tracks, subtitles, fullscreen, picture in picture, speed, zoom, picture fit and stream details. The player engine loads only when opening a film. Available codecs and resolution depend on the upload and browser.
 
-Install dependencies and run `npm run build` to rebuild app.js. GitHub Pages publishes main/root. config.js contains only the public API origin. index.html restricts connections to that origin. All sites under coabond.github.io share a browser origin; only host trusted applications under this account.
+The new player uses the Cloudflare Free-compatible playback service in cloudflare-playback/. Its Google activation-code approval is separate from the existing library Data API connection. Google account credentials stay encrypted in Cloudflare. Player script extraction and isolated QuickJS/WebAssembly evaluation run in a temporary browser worker, which is terminated after stream preparation. No paid Worker Loader or hosting upgrade is configured.
+
+Home includes recently uploaded videos, continuing titles from NOIR progress, and most watched by actual YouTube view counts. Sync refreshes these counts. Search scans all server candidates before ranking and pagination: whole-word title starts, other title phrase matches, all title words, then all description words. Don does not match Don't as a title word. Home clears search and filters.
+
+Private streaming still needs a real owner-account test before replacing the production iframe. This candidate supports ordinary indexed DASH and captions, and rejects live/SABR-only formats. YouTube may block server requests or require additional proof tokens. Free Cloudflare request, CPU and D1 limits still apply; there is no promise of unlimited hosting or guaranteed 4K.
+
+Install dependencies and run `npm run build` to rebuild app.js, player-engine.js and SHAKA-LICENSE. GitHub Pages publishes main/root. config.js contains only the public API origin. index.html restricts connections to that origin. All sites under coabond.github.io share a browser origin; only host trusted applications under this account.
 
