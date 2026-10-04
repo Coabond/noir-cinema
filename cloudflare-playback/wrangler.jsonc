@@ -1,0 +1,14 @@
+{
+  "name": "noir-private-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-03",
+  "vars": {"FRONTEND_ORIGIN": "https://coabond.github.io"},
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "noir-library",
+    "database_id": "9f0ef597-c982-4419-b661-4e47edf7643d",
+    "migrations_dir": "migrations"
+  }],
+  "observability": {"enabled": true}
+}
+
