@@ -10,7 +10,8 @@ export async function sealed(env:Env,value:string,open=false){
 }
 export function sourceURL(value:string){
  const u=new URL(value);
- const media=/^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.googlevideo\.com$/i.test(u.hostname)&&u.pathname==='/videoplayback';
+ // Authenticated legacy TV responses also use YouTube's c.youtube.com CDN.
+ const media=(/^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.googlevideo\.com$/i.test(u.hostname)||/^rr\d+---sn-[a-z0-9-]+\.c\.youtube\.com$/i.test(u.hostname))&&u.pathname==='/videoplayback';
  const captions=u.hostname==='www.youtube.com'&&u.pathname==='/api/timedtext';
  if(u.protocol!=='https:'||u.username||u.password||u.port||(!media&&!captions))throw new Error('Denied media destination');
  return u;

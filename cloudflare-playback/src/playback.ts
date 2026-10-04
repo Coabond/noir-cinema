@@ -1,6 +1,6 @@
 import type {Env} from './worker';
 import {sealed,proxySource,rangeHeader,sourceURL} from './playback-security';
-import {createYouTube,makeManifest,publicPlayer,type SavedAccount,type TransformRequest} from './youtube-playback';
+import {createYouTube,makeManifest,publicPlayer,PlaybackFailure,type SavedAccount,type TransformRequest} from './youtube-playback';
 const json=(value:unknown,status=200)=>Response.json(value,{status});
 type Activation={device_code:string;client:{client_id:string;client_secret:string}};
 type Job={manifest:string;sources:string[];pending?:boolean;transforms?:TransformRequest[]};
@@ -82,11 +82,11 @@ export async function playback(req:Request,env:Env,sessionId:string){
    if(!owner)return json({error:'Unlock NOIR to continue.'},401);
    const signedExpiries=result.sources.map(u=>Number(new URL(u).searchParams.get('expire'))*1000).filter(n=>Number.isFinite(n)&&n>0);
    const expires=Math.min(owner.expires,Date.now()+4*3600000,...signedExpiries.map(n=>n-60000));
-   if(expires<Date.now()+60000)throw new Error('Stream expired');
+   if(expires<Date.now()+60000)throw new PlaybackFailure('STREAM_EXPIRED');
    await env.DB.prepare('UPDATE playback_jobs SET payload=?,expires=? WHERE id=?').bind(await sealed(env,JSON.stringify(result)),expires,id).run();
    await env.DB.prepare('DELETE FROM playback_jobs WHERE expires<=? OR (session_id=? AND id NOT IN (SELECT id FROM playback_jobs WHERE session_id=? ORDER BY created DESC LIMIT 3))').bind(Date.now(),sessionId,sessionId).run();
    return json({job:id,transforms:result.transforms,expires});
-  }catch{return json({error:'YouTube did not provide playable adaptive streams. Use the account that owns this upload. YouTube may also restrict server playback; reconnect or retry.'},502);}
+  }catch(error){const code=error instanceof PlaybackFailure?error.code:'STREAM_SETUP';const messages:Record<string,string>={ACCOUNT:'YouTube could not refresh the website connection.',YOUTUBE_LOGIN_REQUIRED:'YouTube requires the account that owns this upload.',NO_DIRECT_FORMATS:'YouTube returned formats without direct playback URLs. The website cannot yet play this response.',NO_FORMATS:'YouTube returned no adaptive formats for this upload.',PLAYER_RESPONSE:'The website could not read the YouTube player response.',MANIFEST:'The website could not prepare the video manifest.',STREAM_EXPIRED:'YouTube supplied an expired stream. Retry playback.'};return json({error:(messages[code]||'The website could not prepare playback. Retry playback.')+' [WEB-'+code+']',code},502);}
  }
  const match=/^\/playback\/(manifest|media)\/([0-9a-f-]{36})(?:\/(\d{1,3}))?$/.exec(path);
  if(match&&(req.method==='GET'||req.method==='HEAD')){
