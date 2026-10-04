@@ -9,10 +9,10 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 let built=process.env.NOIR_TEST_WORKER;
 if(!built){
  const {build}=await import('esbuild');const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'noir-security-'));built=path.join(temporary,'worker.mjs');
- await build({stdin:{contents:"export {default} from './worker.ts'; export * from './playback-security.ts';",resolveDir:root+'/src',loader:'ts'},tsconfigRaw:{},bundle:true,format:'esm',platform:'neutral',outfile:built});
+ await build({stdin:{contents:"export {default} from './worker.ts'; export * from './playback-security.ts';export * from './youtube-playback.ts';",resolveDir:root+'/src',loader:'ts'},tsconfigRaw:{},bundle:true,format:'esm',platform:'neutral',outfile:built});
  process.on('exit',()=>fs.rmSync(temporary,{recursive:true,force:true}));
 }
-const {default:worker,sealed,sourceURL,rangeHeader,proxySource}=await import(pathToFileURL(path.resolve(built)).href);
+const {default:worker,sealed,sourceURL,rangeHeader,proxySource,makeManifest}=await import(pathToFileURL(path.resolve(built)).href);
 function setup(){
  const sql=new DatabaseSync(':memory:');for(const f of fs.readdirSync(root+'/migrations').sort())sql.exec(fs.readFileSync(root+'/migrations/'+f,'utf8'));
  const prepare=(query)=>{let args=[];const statement={bind(...values){args=values;return statement;},async first(){return sql.prepare(query).get(...args)||null;},async all(){return {results:sql.prepare(query).all(...args)};},async run(){const result=sql.prepare(query).run(...args);return {meta:{changes:Number(result.changes)}};}};return statement;};
@@ -132,4 +132,21 @@ test('APK requests without browser Origin retain old sessions, library and progr
  const connected=await apk('/playback/account');assert.equal(connected.status,200);assert.equal((await connected.json()).connected,false);
  assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM sessions WHERE id=?').get(digest).n,1);assert.equal(sql.prepare('SELECT COUNT(*) AS n FROM playback_account').get().n,0);
  assert.equal((await apk('/auth/logout',{})).status,200);assert.equal((await apk('/api/library')).status,401);
+});
+
+
+test('authenticated compatibility request preserves cipher transforms after SDK adds cpn',async()=>{
+ const saved=globalThis.fetch;const observed=[];
+ const format={itag:137,mimeType:'video/mp4; codecs="avc1.640028"',width:1920,height:1080,fps:30,qualityLabel:'1080p',bitrate:1000000,approxDurationMs:'60000',contentLength:'1000000',initRange:{start:'0',end:'100'},indexRange:{start:'101',end:'200'},signatureCipher:new URLSearchParams({url:'https://r1.googlevideo.com/videoplayback?n=fixture-n&expire=9999999999',s:'fixture-signature',sp:'sig'}).toString()};
+ globalThis.fetch=async(input,init)=>{const url=String(input instanceof Request?input.url:input);if(url.includes('/config'))return Response.json({});assert.ok(url.includes('/player'));const payload=JSON.parse(init.body);observed.push({payload,headers:new Headers(init.headers)});return Response.json({playabilityStatus:{status:'OK'},videoDetails:{videoId:'abcdefghijk',title:'Synthetic fixture',lengthSeconds:'60'},streamingData:{expiresInSeconds:'21600',adaptiveFormats:[format]}});};
+ try{const result=await makeManifest({}, {access_token:'test-access',refresh_token:'test-refresh',expiry_date:new Date(Date.now()+3600000).toISOString(),client:{client_id:'test-id',client_secret:'test-secret'}},'abcdefghijk','https://private-api.example/playback/media/test',async()=>{}, {id:'testplayer',timestamp:20725});
+ assert.equal(observed[0].payload.context.client.clientVersion,'5.20260901');assert.equal(observed[0].payload.playbackContext.devicePlaybackCapabilities.supportXhr,false);assert.equal(observed[0].headers.get('Authorization'),'Bearer test-access');
+ assert.ok(result.sources[0].includes('cpn='));assert.deepEqual(result.transforms,[{index:0,n:'fixture-n',sig:'fixture-signature',sp:'sig'}]);assert.ok(!result.manifest.includes('googlevideo.com'));
+ }finally{globalThis.fetch=saved;}
+});
+
+
+test('legacy TV CDN is limited to exact signed video endpoints',()=>{
+ assert.equal(sourceURL('https://rr3---sn-qxaelner.c.youtube.com/videoplayback?n=fixture').hostname,'rr3---sn-qxaelner.c.youtube.com');
+ for(const url of ['https://rr3---sn-qxaelner.c.youtube.com.evil.example/videoplayback','https://c.youtube.com/videoplayback','https://other.c.youtube.com/videoplayback','https://rr3---sn-qxaelner.c.youtube.com/admin','http://rr3---sn-qxaelner.c.youtube.com/videoplayback','https://rr3---sn-qxaelner.c.youtube.com:8443/videoplayback'])assert.throws(()=>sourceURL(url));
 });
