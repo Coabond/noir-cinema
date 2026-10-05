@@ -65,3 +65,5 @@
 .animated-home-row .carousel-card:hover .poster,.animated-home-row .carousel-card:focus-visible .poster{transform:translateY(-3px);box-shadow:0 10px 24px #0006}
 .animated-home-row .carousel-track{padding-top:8px;scroll-behavior:smooth}
 @media(prefers-reduced-motion:reduce){.animated-home-row .carousel-track{scroll-behavior:auto}.animated-home-row .carousel-card .poster{transition:none}}
+
+.toolbar-sync,.toolbar-refresh{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:10px 12px;border:1px solid #343438;border-radius:8px;background:#19191c;color:#e6bf82;white-space:nowrap}.toolbar-sync:disabled,.toolbar-refresh:disabled{opacity:.5;cursor:wait}.tools{flex-wrap:wrap}.toolbar-sync:focus-visible,.toolbar-refresh:focus-visible{outline:2px solid #e6bf82;outline-offset:3px}@media(max-width:720px){.library-bar .tools{justify-content:flex-start}.toolbar-refresh span{display:none}.library-bar .search{order:5;flex-basis:100%}}
