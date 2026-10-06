@@ -1,4 +1,4 @@
-export const normalize=(value:string)=>String(value||'').normalize('NFKD').replace(/(\p{Script=Latin})\p{M}+/gu,'$1').toLowerCase().replace(/[‘’]/g,"'").replace(/[^\p{L}\p{M}\p{N}']+/gu,' ').trim().replace(/ +/g,' ');
+export const normalize=(value:string)=>String(value||'').normalize('NFKD').replace(/(\p{Script=Latin})\p{M}+/gu,'$1').toLowerCase().replace(/[\u2018\u2019]/g,"'").replace(/[^\p{L}\p{M}\p{N}']+/gu,' ').trim().replace(/ +/g,' ');
 const words=(value:string)=>normalize(value).split(' ').filter(Boolean);
 function prefix(word:string,query:string){return word===query||(!word.includes("'")&&!query.includes("'")&&word.startsWith(query));}
 function all(text:string,q:string,partial=false){const hay=words(text);return words(q).every(w=>hay.some(v=>partial?prefix(v,w):v===w));}
@@ -24,8 +24,8 @@ export function searchRank(title:string,description:string,query:string,cast='',
  return -1;
 }
 export function movieIdentity(uploadTitle:string){
- const yearMatch=uploadTitle.match(/(?:\(|\[|\b)((?:19|20)\d{2})(?:\)|\]|\b)/);
+ const yearMatch=[...uploadTitle.matchAll(/(?:^|[^\p{L}\p{N}])((?:19|20)\d{2})(?=$|[^\p{L}\p{N}])/gu)].find(m=>normalize(uploadTitle.slice(0,m.index)).length>=2);
  let title=(yearMatch?uploadTitle.slice(0,yearMatch.index):uploadTitle).replace(/\[[^\]]*\]/g,' ').replace(/\b(?:WEB[ .-]?DL|WEB[ .-]?RIP|HDRIP|BDRIP|BLURAY|DVDRIP|REMUX|2160P|1080P|720P|4K|FULL MOVIE)\b.*$/i,'').trim();
- title=title.replace(/[-_|: ]+$/,'').trim();
+ title=title.replace(/_+/g,' ').replace(/[-_|: ]+$/,'').trim().replace(/ +/g,' ');
  return {title,year:yearMatch?Number(yearMatch[1]):0,key:normalize(title)+'|'+(yearMatch?yearMatch[1]:'')};
 }
