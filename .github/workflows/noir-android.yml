@@ -1,0 +1,42 @@
+name: Build NOIR Android
+on:
+  push:
+    paths:
+      - 'noir-android-source.part*'
+      - '.github/workflows/noir-android.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Restore public Android source
+        run: |
+          cat noir-android-source.part* > "$RUNNER_TEMP/noir-source.zip"
+          echo "13735f66bfbce4451a0ef1bb7552a9703d32e18358b9ed95dfad81b154cca80a  $RUNNER_TEMP/noir-source.zip" | sha256sum -c -
+          mkdir android-build
+          unzip -q "$RUNNER_TEMP/noir-source.zip" -d android-build
+      - name: Build and verify unsigned APK
+        working-directory: android-build
+        run: |
+          gradle :app:assembleRelease :app:testDebugUnitTest :app:lintRelease --no-daemon --console=plain
+          python3 tools/check_release_auth.py app/build/outputs/apk/release/app-release-unsigned.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: NOIR-Android-1.5.0-unsigned
+          path: |
+            android-build/app/build/outputs/apk/release/*.apk
+            android-build/app/build/reports/tests/
+            android-build/app/build/reports/lint-results-release.*
+          retention-days: 7
