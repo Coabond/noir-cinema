@@ -6,3 +6,17 @@
 .noir-stage .shaka-text-container .shaka-text-wrapper{text-align:center}
 .noir-video::cue{color:white;background:#000b;text-shadow:0 1px 3px black}
 @media(max-width:720px){.noir-stage .shaka-text-container{inset-inline:5%;bottom:145px;font-size:20px}.noir-stage.controls-hidden .shaka-text-container{bottom:7%}}
+
+/* Player tools: lightweight lighting, centered imported captions and N loading. */
+.noir-video{touch-action:none}
+.noir-ambient{position:absolute;inset:0;pointer-events:none;z-index:1;transition:background 1.4s}
+.noir-buffering{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none;z-index:2;background:#0004;color:#eaca96;font-size:13px;text-shadow:0 1px 4px #000}
+.noir-buffering-n{font:bold clamp(60px,7vw,96px)/1 sans-serif;letter-spacing:-6px;color:#eaca96;animation:noir-breathe 1.3s ease-in-out infinite alternate;text-shadow:0 0 28px #eaca9630}
+@keyframes noir-breathe{from{opacity:.3;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.noir-external-caption{position:absolute;inset:auto 5% clamp(110px,19%,155px);z-index:2;white-space:pre-line;text-align:center;pointer-events:none;color:white;font:500 clamp(18px,2.1vw,32px)/1.35 sans-serif;text-shadow:0 2px 4px #000,0 0 6px #000;transition:bottom .2s}
+.controls-hidden .noir-external-caption{bottom:6%}
+.noir-subtitle-input{display:none}
+.noir-transport .frame-control{font-size:12px;white-space:nowrap;min-width:38px}
+@media(max-width:720px){.noir-transport{flex-wrap:wrap;gap:3px}.noir-transport .frame-control{min-width:32px;padding:7px 4px}.noir-external-caption{bottom:155px;font-size:20px}.controls-hidden .noir-external-caption{bottom:7%}.noir-controls{padding-top:28px}.stream-badge{display:none}}
+@media(max-height:500px) and (orientation:landscape){.noir-stage{height:100dvh;min-height:0}.noir-watch{max-height:100dvh}.noir-player-top{padding:10px 16px}.noir-player-top h2{font-size:15px;margin:5px 0}.noir-controls{padding:20px 16px 10px}.noir-player-settings{bottom:90px;max-height:calc(100% - 105px)}.noir-transport{margin-top:5px}.noir-film-notes{display:none}}
+@media(prefers-reduced-motion:reduce){.noir-buffering-n,.noir-ambient{animation:none;transition:none}}
