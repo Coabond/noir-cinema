@@ -8,5 +8,5 @@ export async function openBrowserStream(id:string,signal:AbortSignal){
   function done(error:Error|null,value?:unknown){clearTimeout(timer);worker.removeEventListener('message',received);worker.removeEventListener('error',failed);signal.removeEventListener('abort',abort);error?reject(error):resolve(value);}
   if(signal.aborted){abort();return;}worker.addEventListener('message',received);worker.addEventListener('error',failed);signal.addEventListener('abort',abort,{once:true});worker.postMessage({serial:number,kind,data});
  });
- try{const code=await playbackRequest('player',undefined,signal);const player=await call('prepare',code);const source=await playbackRequest('resolve',{id,player},signal);const results=await call('transform',source.transforms);return await playbackRequest('finalize',{job:source.job,results},signal);}finally{worker.terminate();}
+ try{const code=await playbackRequest('player',undefined,signal);const player=await call('prepare',code);const source=await playbackRequest('resolve',{id,player},signal);const results=await call('transform',source.transforms);return {...await playbackRequest('finalize',{job:source.job,results},signal),storyboard:source.storyboard};}finally{worker.terminate();}
 }
