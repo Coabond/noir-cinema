@@ -22,3 +22,9 @@
 @media(prefers-reduced-motion:reduce){.noir-buffering-n,.noir-ambient{animation:none;transition:none}}
 
 .noir-seek-preview{position:absolute;z-index:12;bottom:145px;transform:translateX(-50%);padding:6px;border:1px solid #e7bd7b;border-radius:8px;background:#101216;color:#fff;text-align:center;pointer-events:none;max-width:176px}.noir-preview-image{width:160px;height:90px;overflow:hidden;border-radius:4px}.noir-preview-image img{display:block;object-fit:fill}.noir-details-panel{position:absolute;z-index:14;bottom:0;left:0;right:0;max-height:55%;overflow:auto;padding:22px 28px;background:linear-gradient(180deg,#15171af5,#08090bf8);animation:noir-details-enter .18s ease-out}.noir-details-panel>div{display:flex;justify-content:space-between;align-items:center}.noir-details-panel h3{font-size:clamp(18px,2.2vw,28px);margin:12px 0}.noir-details-panel p{white-space:pre-wrap;line-height:1.65;color:#dedee2}.controls-hidden .noir-seek-preview{bottom:36px}.noir-details-panel button{border:0;color:white;background:none;padding:10px}@keyframes noir-details-enter{from{transform:translateY(22px);opacity:0}to{transform:translateY(0);opacity:1}}@media(prefers-reduced-motion:reduce){.noir-details-panel{animation:none}}
+
+/* Translucent player overlays: keep the picture visible without blurring it. */
+.noir-details-panel{background:linear-gradient(180deg,rgba(16,18,22,.40),rgba(16,18,22,.76));border-top:1px solid #ffffff1f;text-shadow:0 1px 3px #000,0 0 6px #0009}
+.noir-details-panel p{color:#f7f7f9}
+.noir-transport .play-control{background:#10121638;color:#fff;border:1px solid #ffffff40;filter:drop-shadow(0 1px 3px #000)}
+.noir-transport .play-control:hover,.noir-transport .play-control:focus-visible{background:#10121666}
