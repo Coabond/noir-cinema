@@ -23,7 +23,7 @@ jobs:
       - name: Restore public Android source
         run: |
           cat noir-android-source.part* > "$RUNNER_TEMP/noir-source.zip"
-          echo "fef1bb6aeeb6b3fdfd41ceb54bb5403e701a2ae773cebf1fe83d8eb5359180cf  $RUNNER_TEMP/noir-source.zip" | sha256sum -c -
+          echo "7fba83c2d5e1996e9947507af0f918cab9c61d1e98beb4ec62cc2f4bc2428cee  $RUNNER_TEMP/noir-source.zip" | sha256sum -c -
           mkdir android-build
           unzip -q "$RUNNER_TEMP/noir-source.zip" -d android-build
       - name: Build and verify unsigned APK
