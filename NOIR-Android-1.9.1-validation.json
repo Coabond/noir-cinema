@@ -1,0 +1,31 @@
+{
+  "version": "1.9.1",
+  "flow": "Download offline > quality/audio > SD card/folder > Downloads > Play offline",
+  "appOnly": true,
+  "nativeWriterTestsPassed": 10,
+  "streamingResolverUnchanged": true,
+  "minSdk": 26,
+  "build": "passed",
+  "physicalPrivateMovieSdTest": "not tested",
+  "nativeRetry": "restarts track transfer from beginning",
+  "decoderUsedForDownload": false,
+  "browserEngineAdded": false,
+  "sourceSha256": "7fba83c2d5e1996e9947507af0f918cab9c61d1e98beb4ec62cc2f4bc2428cee",
+  "nativeJavaCompile": "passed",
+  "androidTests": {
+    "tests": 104,
+    "failures": 0,
+    "ignored": 2
+  },
+  "lint": {
+    "Error": 0,
+    "Warning": 52,
+    "Fatal": 0
+  },
+  "signedApkSha256": "c435cd74896e54d9c4d361a3f8c9669ce326635873fb476ae36734dcabdaf009",
+  "apkBytes": 24257194,
+  "signature": "v2 + v3, existing NOIR key",
+  "workflowRun": 40119644613,
+  "commit": "dd94730cd84379ba7c2d19a4d85be13861dfbee8",
+  "artifactZipSha256": "04568e21fb70dee8ff1326cc7e87413f5412c4d20275c68197eda8e12e50577f"
+}
