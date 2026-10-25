@@ -1,6 +1,9 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Play,Pause,SkipBack,SkipForward,Maximize,Minimize,Volume2,VolumeX,X,Settings2,PictureInPicture2,RotateCcw} from 'lucide-react';
-import {authorizePlayback,libraryFetch,playbackRequest} from './bridge-client';
+import {BACKEND,authorizePlayback,libraryFetch,playbackRequest} from './bridge-client';
+import {SabrStreamingAdapter} from 'googlevideo/sabr-streaming-adapter';
+import {buildSabrFormat} from 'googlevideo/utils';
+import {ShakaPlayerAdapter} from './SabrShakaAdapter';
 import PlaybackAccount from './PlaybackAccount';
 import {seekTarget,storyboardThumbnail} from './SeekTools';
 import {openBrowserStream} from './BrowserPlayback';
@@ -52,7 +55,7 @@ export default function NoirPlayer({video,close}:{video:Video;close:()=>void}){
  useEffect(()=>{dialog.current?.showModal();const changed=()=>setFullscreen(!!document.fullscreenElement);document.addEventListener('fullscreenchange',changed);return()=>{clearTimeout(idle.current);document.removeEventListener('fullscreenchange',changed);};},[]);
  useEffect(()=>{if(!playing||settings)setVisible(true);else reveal();},[playing,settings]);
  useEffect(()=>{
-  const controller=new AbortController();let active=true,local:any,timer:ReturnType<typeof setInterval>|undefined;setReady(false);setStoryboard(undefined);setBuffering(true);setError('');setConnect(false);setStatus('Preparing your cinema…');setQuality('auto');setCaption('off');
+  const controller=new AbortController();let active=true,local:any,sabrAdapter:any,timer:ReturnType<typeof setInterval>|undefined;setReady(false);setStoryboard(undefined);setBuffering(true);setError('');setConnect(false);setStatus('Preparing your cinema…');setQuality('auto');setCaption('off');
   const refreshTracks=()=>{if(!active||!local)return;const variants=local.getVariantTracks();setTracks(variants);setTexts(local.getTextTracks());const a=local.getAudioTracks();setAudios(a);const selected=a.find((t:any)=>t.active)||a[0];setAudio(selected?audioKey(selected):'');};
   const save=()=>{const v=element.current;if(v&&Number.isFinite(v.currentTime)&&v.currentTime>0)void libraryFetch('/api/library',{method:'POST',headers:{'Content-Type':'application/json','X-Noir-Request':'1'},body:JSON.stringify({action:'progress',id:video.id,seconds:v.currentTime})}).catch(()=>{});};
   (async()=>{try{
@@ -61,15 +64,15 @@ export default function NoirPlayer({video,close}:{video:Video;close:()=>void}){
    local=new engine.Player();player.current=local;await local.attach(element.current);if(!active)return;
    local.setVideoContainer(stage.current);
    local.configure({textDisplayFactory:centeredTextFactory(local.getConfiguration().textDisplayFactory,engine),streaming:{bufferingGoal:lowMemory?12:30,rebufferingGoal:2,bufferBehind:lowMemory?0:5},abr:{enabled:true},manifest:{dash:{ignoreMinBufferTime:true}}});
-   local.getNetworkingEngine().registerRequestFilter((_type:any,request:any)=>{authorizePlayback(request.uris,request.headers);request.allowCrossSiteCredentials=false;});
+   local.getNetworkingEngine().registerRequestFilter((_type:any,request:any)=>{const urls=request.uris.map((value:string)=>new URL(value,location.href));if(urls.every((u:URL)=>u.origin===BACKEND&&/^\/playback\/(manifest|media|sabr)\//.test(u.pathname)))authorizePlayback(request.uris,request.headers);else if(!urls.every((u:URL)=>u.protocol==='sabr:'||u.hostname.endsWith('.googlevideo.com')||u.hostname==='www.youtube.com'&&u.pathname.startsWith('/videoplayback')))throw new Error('Unexpected playback destination.');request.allowCrossSiteCredentials=false;});
    local.addEventListener('error',()=>{if(active){setError('The stream stopped or your connection expired. Retry to request fresh playback.');setStatus('Playback interrupted');}});
    local.addEventListener('buffering',(event:any)=>{if(active)setBuffering(Boolean(event.buffering));});local.addEventListener('trackschanged',refreshTracks);local.addEventListener('variantchanged',refreshTracks);local.addEventListener('adaptation',refreshTracks);
-   setStatus('Opening your private stream…');const source=await openBrowserStream(video.id,controller.signal);if(!active)return;setStoryboard(source.storyboard);
+   setStatus('Opening your private stream…');const source=await openBrowserStream(video.id,controller.signal);if(!active)return;setStoryboard(source.storyboard);if(source.sabr){const adapter=new ShakaPlayerAdapter();adapter.setProxyURL(source.sabr.proxyUrl);sabrAdapter=new SabrStreamingAdapter({playerAdapter:adapter,clientInfo:source.sabr.clientInfo,enableCaching:!lowMemory,maxCacheSizeMB:lowMemory?1:3});sabrAdapter.attach(local);sabrAdapter.setStreamingURL(source.sabr.proxyUrl);sabrAdapter.setUstreamerConfig(source.sabr.ustreamerConfig);sabrAdapter.setServerAbrFormats(source.sabr.formats.map((f:any)=>buildSabrFormat(f)));}
    const resume=element.current?.currentTime||video.position;await local.load(source.manifest,resume<video.duration-15?resume:0,'application/dash+xml');if(!active)return;
    refreshTracks();setReady(true);setStatus('');const v=element.current!;v.playbackRate=Number(rate);v.volume=volume;v.muted=muted;await v.play().catch(()=>{if(active)setStatus('Press Play to begin.');});
    timer=setInterval(()=>{if(active){setMetrics(local.getStats());if(v.currentTime-lastSaved.current>=15||lastSaved.current-v.currentTime>=15){lastSaved.current=v.currentTime;save();}}},1000);
   }catch(e){if(active&&!controller.signal.aborted){setError((e as Error).message);setStatus('Your cinema will be ready shortly.');}}})();
-  return()=>{active=false;controller.abort();clearInterval(timer);save();if(player.current===local)player.current=null;void local?.destroy();};
+  return()=>{active=false;controller.abort();clearInterval(timer);save();sabrAdapter?.dispose();if(player.current===local)player.current=null;void local?.destroy();};
  },[video.id,attempt]);
  useEffect(()=>{const v=element.current;if(v){v.playbackRate=Number(rate);v.volume=volume;v.muted=muted;}},[rate,volume,muted,ready]);
  function selectQuality(id:string){setQuality(id);const p=player.current;if(!p)return;p.configure({abr:{enabled:id==='auto'}});if(id!=='auto'){const track=p.getVariantTracks().find((t:any)=>String(t.id)===id);if(track)p.selectVariantTrack(track,true);}}

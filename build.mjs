@@ -9,3 +9,4 @@ await copyFile('node_modules/@jitl/quickjs-wasmfile-release-sync/dist/emscripten
 await copyFile('node_modules/@jitl/quickjs-wasmfile-release-sync/LICENSE','QUICKJS-LICENSE');
 
 await copyFile('node_modules/youtubei.js/LICENSE','YOUTUBEJS-LICENSE');
+await copyFile('node_modules/googlevideo/LICENSE','GOOGLEVIDEO-LICENSE');

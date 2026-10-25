@@ -67,7 +67,7 @@ export async function saveLibraryForLater(meta:any,signal:AbortSignal,onProgress
 }
 export function authorizePlayback(urls:string[],headers:Record<string,string>){
  if(!token||Date.now()>=deadline){lockLibrary();throw new Error('Unlock NOIR to continue.');}
- if(!urls.length||urls.some(value=>{const u=new URL(value);return u.origin!==BACKEND||!/^\/playback\/(manifest|media)\//.test(u.pathname);}))throw new Error('Unexpected playback destination.');
+ if(!urls.length||urls.some(value=>{const u=new URL(value);return u.origin!==BACKEND||!/^\/playback\/(manifest|media|sabr)\//.test(u.pathname);}))throw new Error('Unexpected playback destination.');
  headers.Authorization='Bearer '+token;
 }
 export async function playbackRequest(path:string,body?:unknown,signal?:AbortSignal){
