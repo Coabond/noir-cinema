@@ -1,0 +1,9 @@
+.noir-stage video.noir-keyboard-zoom-video {
+  transform:translate(var(--noir-keyboard-zoom-left,0%),var(--noir-keyboard-zoom-top,0%)) rotate(var(--noir-keyboard-zoom-rotation,0deg)) scaleX(var(--noir-keyboard-zoom-x,1)) scaleY(var(--noir-keyboard-zoom-y,1)) !important;
+  transform-origin:center center !important;
+}
+.noir-stage[data-keyboard-controls="hidden"]>.noir-controls,
+.noir-stage[data-keyboard-controls="hidden"]>.noir-player-top {
+  opacity:0 !important;visibility:hidden !important;pointer-events:none !important;
+}
+
