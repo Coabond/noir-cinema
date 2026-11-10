@@ -83,6 +83,7 @@
       return forcedBackup || route && route.until > Date.now();
     };
     const selectBackup = () => save(routeKey, { until: Math.floor(Date.now() / 864e5) * 864e5 + 864e5 }, true);
+    const selectBackupBriefly = () => save(routeKey, { until: Date.now() + 6e4 }, true);
     win.fetch = async (input, init) => {
       const req = new Request(input instanceof Request ? input.clone() : new URL(String(input), win.location.href), init);
       const url = new URL(req.url);
@@ -90,6 +91,7 @@
       const auth = req.headers.get("Authorization") || "";
       const pair = get(key);
       const paired = pair && pair.primary === auth && pair.expires > Date.now() && !pair.backupOnly;
+      const canUseBackup = paired || pair?.backupOnly && pair.primary === auth && pair.expires > Date.now();
       const progressTime = (/* @__PURE__ */ new Date()).toISOString();
       const publicOrigin = url.origin === backup ? win.NOIR_API_ORIGIN || win.location.origin : url.origin;
       if (paired && url.pathname === "/api/library" && req.method === "GET" && url.searchParams.get("view") === "home") {
@@ -134,8 +136,9 @@
         return new Response(text, { status: response2.status, statusText: response2.statusText, headers });
       };
       const useBackup = async () => {
+        if (!canUseBackup) return Response.json({ error: "The backup session is unavailable. Lock and unlock NOIR once to reconnect the backup." }, { status: 409 });
         const headers = new Headers(req.headers);
-        if (pair?.primary === auth && pair.expires > Date.now()) headers.set("Authorization", pair.backup);
+        headers.set("Authorization", pair.backup);
         const response2 = await native(new Request(backup + url.pathname + url.search, { method: req.method, headers, body: ["GET", "HEAD"].includes(req.method) ? void 0 : req.clone().body, duplex: "half", credentials: "omit", signal: req.signal }));
         return normalize(response2, "backup");
       };
@@ -192,16 +195,35 @@
         }
         if (jobs.get(id) === "backup") return useBackup();
         if (!jobs.has(id)) return Response.json({ error: "Playback preparation expired. Retry playback." }, { status: 409 });
-        const response2 = await native(req);
+        let response2;
+        try {
+          response2 = await native(req);
+        } catch (error) {
+          if (paired && !req.signal.aborted && error instanceof TypeError) selectBackupBriefly();
+          throw error;
+        }
         if (await quotaExceeded(response2)) selectBackup();
         return normalize(response2, "primary");
       }
       if (url.pathname === "/playback/poll" && activationBackend) return activationBackend === "backup" ? useBackup() : normalize(await native(req), "primary");
-      if (active() || pair?.backupOnly && pair.primary === auth && pair.expires > Date.now()) return useBackup();
-      const response = await native(req.clone());
+      if (active() && canUseBackup || pair?.backupOnly && canUseBackup) return useBackup();
+      const canReplay = ["GET", "HEAD"].includes(req.method) || url.pathname === "/playback/resolve";
+      let response;
+      try {
+        response = await native(req.clone());
+      } catch (error) {
+        if (!paired || req.signal.aborted || !(error instanceof TypeError)) throw error;
+        if (!canReplay) {
+          selectBackupBriefly();
+          throw error;
+        }
+        const alternate = await useBackup();
+        if (alternate.ok) selectBackupBriefly();
+        return alternate;
+      }
       if (await quotaExceeded(response)) {
         selectBackup();
-        if (["GET", "HEAD"].includes(req.method) || url.pathname === "/playback/resolve") return useBackup();
+        if (canReplay) return useBackup();
       }
       return normalize(response, "primary");
     };
