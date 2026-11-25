@@ -1,0 +1,9 @@
+.noir-youtube-fallback{position:absolute;inset:0;z-index:30;background:#000;display:flex;flex-direction:column;color:#eee}
+.noir-youtube-header{min-height:48px;display:flex;align-items:center;gap:16px;padding:8px 16px;background:#151515;font:13px system-ui,sans-serif}
+.noir-youtube-header span{flex:1}.noir-youtube-header a{color:#e8bd7b;white-space:nowrap}
+.noir-youtube-header button{border:0;background:transparent;color:#fff;font-size:28px;cursor:pointer;min-width:40px;min-height:40px}
+.noir-youtube-header :focus-visible{outline:2px solid #e8bd7b;outline-offset:3px}
+.noir-youtube-fallback iframe{width:100%;flex:1;min-height:0;border:0;background:#000}
+.youtube-fallback-active>.noir-controls,.youtube-fallback-active>.noir-player-message,.youtube-fallback-active>.noir-buffering{visibility:hidden;pointer-events:none}
+@media(max-width:600px){.noir-youtube-header{font-size:11px;padding:4px 8px;gap:8px}.noir-youtube-header span{max-width:55%}}
+
