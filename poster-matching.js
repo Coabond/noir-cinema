@@ -2,7 +2,7 @@
 export const normalized = value => String(value||'').normalize('NFKD').replace(/(\p{Script=Latin})\p{M}+/gu,'$1').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu,' ').trim().replace(/ +/g,' ');
 export function filmIdentity(upload){
  const raw=String(upload||'');const year=[...raw.matchAll(/(?:^|[^\p{L}\p{N}])((?:19|20)\d{2})(?=$|[^\p{L}\p{N}])/gu)].find(m=>normalized(raw.slice(0,m.index)).length);
- let title=(year?raw.slice(0,year.index):raw).replace(/\[[^\]]*\]/g,' ').replace(/\b(?:WEB[ ._-]?DL|WEB[ ._-]?RIP|HDRIP|BDRIP|BLURAY|DVDRIP|REMUX|2160P|1080P|720P|4K|FULL MOVIE|SEASON)\b.*$/i,'').replace(/_+/g,' ').replace(/[—–()|:\-\s]+$/g,'').trim();
+ let title=(year?raw.slice(0,year.index):raw).replace(/\[[^\]]*\]/g,' ').replace(/\b(?:WEB[ ._-]?DL|WEB[ ._-]?RIP|HDRIP|BDRIP|BLURAY|DVDRIP|REMUX|2160P|1080P|720P|4K|FULL MOVIE|SEASON)\b.*$/i,'').replace(/\b(?:3D|2D|FULL SBS|HALF SBS|SBS|HSBS|OU)\b/gi,' ').replace(/_+/g,' ').replace(/[—–()|:\-\s]+$/g,'').trim().replace(/ +/g,' ');
  return {title,year:year?Number(year[1]):0,key:normalized(title)+'|'+(year?year[1]:'')};
 }
 export function exactFilm(entities,identity){
