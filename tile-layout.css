@@ -1,0 +1,8 @@
+/* Keep artwork geometry independent of the source image's dimensions. */
+main .video-card{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;align-self:start;min-width:0;max-width:100%;height:auto}
+main .video-card .poster{display:block;flex:none;width:100%;height:auto;min-height:0;aspect-ratio:16/9;position:relative;overflow:hidden;box-sizing:border-box;background:#15161b}
+main .video-card .poster img{display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:cover;object-position:center}
+main .video-card .poster img[data-noir-poster-source]{object-fit:contain}
+main .video-card h3{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;word-break:normal;max-width:100%;min-height:2.9em;line-height:1.45;margin:12px 0 8px}
+main .video-card .card-meta{min-width:0;max-width:100%}
+
